@@ -17,23 +17,13 @@ const Button: React.FC<{ position: "top-left" | "top-right"; children?: React.Re
   const [showForm, setShowForm] = useState(false);
   const formRef = useRef<HTMLDivElement>(null);
 
-  const [cards, setCards] = useState<CardItem[]>([]);
-  const [editingCard, setEditingCard] = useState<CardItem | null>(null);
-
-  // Use useEffect to ensure localStorage is accessed only on the client-side
-  useEffect(() => {
+  // Initialize cards state with data from localStorage or default data
+  const [cards, setCards] = useState<CardItem[]>(() => {
     const savedCards = localStorage.getItem("cards");
-    if (savedCards) {
-      setCards(JSON.parse(savedCards));
-    }
-  }, []);
+    return savedCards ? JSON.parse(savedCards) : [];
+  });
 
-  // Save cards to localStorage whenever cards state changes
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("cards", JSON.stringify(cards));
-    }
-  }, [cards]);
+  const [editingCard, setEditingCard] = useState<CardItem | null>(null); // State to store the card being edited
 
   const handleUpdate = (id: string) => {
     const cardToUpdate = cards.find((card) => card.id === id);
@@ -43,9 +33,18 @@ const Button: React.FC<{ position: "top-left" | "top-right"; children?: React.Re
     }
   };
 
+  // Save cards to localStorage whenever cards state changes
+  useEffect(() => {
+    localStorage.setItem("cards", JSON.stringify(cards));
+  }, [cards]);
+
   const handleDelete = (id: string) => {
     setCards(prev => prev.filter(card => card.id !== id));
   };
+
+  useEffect(() => {
+    console.log("Cards updated:", cards); // Debugging the updated cards
+  }, [cards]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -83,24 +82,24 @@ const Button: React.FC<{ position: "top-left" | "top-right"; children?: React.Re
 
       {/* Form (conditionally rendered based on showForm state) */}
       {showForm && (
-        <div className="fixed inset-0 bg-gray-700 bg-opacity-50 flex justify-center items-center z-50">
-          <div
-            ref={formRef}
-            className="bg-white p-6 rounded-lg shadow-lg w-full sm:w-11/12 md:w-2/3 lg:w-1/2 xl:w-1/3 max-w-full overflow-auto"
-          >
-            <button
-              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
-              onClick={() => setShowForm(false)}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-            {/* Pass the editingCard to the form */}
-            <Form setCard={setCards} editingCard={editingCard} setEditingCard={setEditingCard} />
-          </div>
-        </div>
-      )}
+  <div className="fixed inset-0 bg-gray-700 bg-opacity-50 flex justify-center items-center z-50">
+    <div
+      ref={formRef}
+      className="bg-white p-6 rounded-lg shadow-lg w-full sm:w-11/12 md:w-2/3 lg:w-1/2 xl:w-1/3 max-w-full overflow-auto"
+    >
+      <button
+        className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+        onClick={() => setShowForm(false)}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+      {/* Pass the editingCard to the form */}
+      <Form setCard={setCards} editingCard={editingCard} setEditingCard={setEditingCard} />
+    </div>
+  </div>
+)}
 
       <div className="flex justify-center items-center w-full mt-40">
         <Cardlist card={cards} onDelete={handleDelete} handleUpdate={handleUpdate} />
