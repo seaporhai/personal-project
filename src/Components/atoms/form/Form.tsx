@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { PopupModal } from "./popup"; // Import PopupModal
 
 interface FormProps {
@@ -7,9 +7,11 @@ interface FormProps {
       { id: string; name: string; image: string; description: string; category: string; joinedDate: string; role: string }[]
     >
   >;
+  editingCard: { id: string; name: string; image: string; description: string; category: string; joinedDate: string; role: string } | null;
+  setEditingCard: React.Dispatch<React.SetStateAction<null | { id: string; name: string; image: string; description: string; category: string; joinedDate: string; role: string }>>;
 }
 
-const Form: React.FC<FormProps> = ({ setCard }) => {
+const Form: React.FC<FormProps> = ({ setCard, editingCard, setEditingCard }) => {
   // Initialize the form data with today's date for the joinedDate
   const getTodayDate = (): string => {
     const today = new Date();
@@ -31,6 +33,13 @@ const Form: React.FC<FormProps> = ({ setCard }) => {
   const [showModal, setShowModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
 
+  // Populate form with editingCard data if available
+  useEffect(() => {
+    if (editingCard) {
+      setFormData({ ...editingCard });
+    }
+  }, [editingCard]);
+
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
     const { name, value } = e.target;
     setFormData((prevData) => ({ ...prevData, [name]: value }));
@@ -49,18 +58,29 @@ const Form: React.FC<FormProps> = ({ setCard }) => {
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+
     // Updated validation to include role
     if (!formData.name || !formData.image || !formData.description || !formData.category || !formData.joinedDate || !formData.role) {
       setModalMessage("All fields are required.");
       setShowModal(true);
       return;
     }
-    const newCard = { id: crypto.randomUUID(), ...formData };
-    setCard((prev) => {
-      const updatedCards = [...prev, newCard];
-      console.log("Updated Cards:", updatedCards); // Debugging
-      return updatedCards;
-    });
+
+    if (editingCard) {
+      // Update existing card
+      setCard((prev) =>
+        prev.map((card) => (card.id === editingCard.id ? { ...card, ...formData } : card))
+      );
+      setEditingCard(null); // Clear editing state after updating
+    } else {
+      // Add a new card
+      const newCard = { id: crypto.randomUUID(), ...formData };
+      setCard((prev) => {
+        const updatedCards = [...prev, newCard];
+        console.log("Updated Cards:", updatedCards); // Debugging
+        return updatedCards;
+      });
+    }
 
     // Reset form data after submission
     setFormData({ name: "", image: "", description: "", category: "", joinedDate: getTodayDate(), role: "" });
@@ -71,7 +91,7 @@ const Form: React.FC<FormProps> = ({ setCard }) => {
   return (
     <div className="max-w-lg mx-auto mt-10 px-6">
       <form onSubmit={handleSubmit} className="bg-white shadow-lg rounded-lg px-8 pt-6 pb-8 mb-4">
-        <h2 className="text-xl font-bold text-center mb-5 text-gray-800">Add New Card</h2>
+        <h2 className="text-xl font-bold text-center mb-5 text-gray-800">{editingCard ? "Edit Card" : "Add New Card"}</h2>
 
         {/* Name */}
         <div className="mb-4">
@@ -176,7 +196,7 @@ const Form: React.FC<FormProps> = ({ setCard }) => {
             className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded w-full transition"
             type="submit"
           >
-            Add Card
+            {editingCard ? "Update Card" : "Add Card"}
           </button>
         </div>
       </form>
