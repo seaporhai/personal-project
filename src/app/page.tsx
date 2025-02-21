@@ -5,10 +5,8 @@
   const page = () => {
     return (
       <div>
-        <Button position="top-left">
+        <Button position="top-right">
         </Button>
-       
-
       </div>
     );
   };

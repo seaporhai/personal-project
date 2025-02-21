@@ -69,7 +69,7 @@ const Button: React.FC<{ position: "top-left" | "top-right"; children?: React.Re
   return (
     <div className="flex relative">
       {/* Floating Button */}
-      <div className={`absolute ${position === "top-right" ? "top-8 right-8" : "top-8 left-8"}`}>
+      <div className={`absolute ${position === "top-right" ? "top-8 right-2" : "top-8 left-8"}`}>
         <button
           className="bg-blue-500 text-white p-4 rounded-full shadow-lg hover:bg-blue-600 transition duration-300 ease-in-out"
           onClick={() => setShowForm(!showForm)}
